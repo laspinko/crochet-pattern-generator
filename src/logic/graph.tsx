@@ -1,7 +1,5 @@
-import Color, { ColorInstance } from "color";
+import { ColorInstance } from "color";
 import { distance, Point3D } from "./curves";
-import update from "immutability-helper";
-import { StickyNote2Sharp } from "@mui/icons-material";
 
 export type Stitch = {
   id: number;
@@ -11,8 +9,14 @@ export type Stitch = {
   yarnColor: ColorInstance;
 };
 
+const pickColor = (target: ColorInstance, colors: ColorInstance[]) =>
+  [...colors].sort(
+    (a, b) => colorDistance(a, target) - colorDistance(b, target)
+  )[0] || target;
+
 export const buildPiece = (
   points: Point3D[],
+  yarnColors: ColorInstance[],
   closeAtTheEnd?: boolean
 ): Stitch[] => {
   type Accumulator = {
@@ -30,7 +34,7 @@ export const buildPiece = (
           prev,
           pos: point,
           postStitches: openStitches.slice(0, openStitches.length - 1),
-          yarnColor: point.color || Color("white"),
+          yarnColor: pickColor(point.color, yarnColors),
         };
         return { stitches: [...stitches, curr], openStitches: [] };
       }
@@ -77,7 +81,7 @@ export const buildPiece = (
           ...skipped.slice(prev && prev.postStitches.length == 1 ? 1 : 0),
           ...(closest ? [closest] : []),
         ],
-        yarnColor: point.color || Color("white"),
+        yarnColor: pickColor(point.color, yarnColors),
       };
       return {
         stitches: [...stitches, curr],
@@ -106,13 +110,8 @@ const colorDistance = (a: ColorInstance, b: ColorInstance) => {
 
 export const recolour = (piece: Stitch[], colors: ColorInstance[]): Stitch[] =>
   piece.map((stitch): Stitch => {
-    const col = stitch.pos.color;
-    if (!col) return { ...stitch, yarnColor: Color("yarn") };
     return {
       ...stitch,
-      yarnColor:
-        [...colors].sort(
-          (a, b) => colorDistance(a, col) - colorDistance(b, col)
-        )[0] || col,
+      yarnColor: pickColor(stitch.pos.color, colors),
     };
   });

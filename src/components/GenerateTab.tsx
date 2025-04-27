@@ -1,11 +1,15 @@
 import { Autocomplete, Button, Stack, TextField } from "@mui/material";
 import { useState } from "react";
 import { buildPiece, Stitch } from "../logic/graph";
-import { spiralCurveHelper, generateEquidistantPoints } from "../logic/curves";
+import {
+  spiralCurveHelper,
+  generateEquidistantPoints,
+  Point3D,
+} from "../logic/curves";
 
 const rowOptions = [...new Array(45)].map((_, i) => i + 5);
-type GenerateTabProps = { onStitchesChange: (stitches: Stitch[]) => void };
-export const GenerateTab = ({ onStitchesChange }: GenerateTabProps) => {
+type GenerateTabProps = { onPointsChange: (stitches: Point3D[]) => void };
+export const GenerateTab = ({ onPointsChange }: GenerateTabProps) => {
   const [targetRows, setTargetRows] = useState(rowOptions[0]!);
   return (
     <Stack>
@@ -23,7 +27,7 @@ export const GenerateTab = ({ onStitchesChange }: GenerateTabProps) => {
         onClick={() => {
           const { curve, rowHeight } = spiralCurveHelper(400, targetRows);
           const points = generateEquidistantPoints(curve, rowHeight);
-          onStitchesChange(buildPiece(points, true));
+          onPointsChange(points);
         }}
       >
         Generate pattern

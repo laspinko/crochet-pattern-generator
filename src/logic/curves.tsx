@@ -4,7 +4,7 @@ export type Point3D = {
   x: number;
   y: number;
   z: number;
-  color: ColorInstance | null;
+  color: ColorInstance;
 };
 
 const spiral = (r: number, alpha: number, alphaMax: number): Point3D => {
@@ -13,7 +13,7 @@ const spiral = (r: number, alpha: number, alphaMax: number): Point3D => {
     x: r * Math.cos(alpha) * Math.cos(verticalAlpha),
     y: r * Math.sin(alpha) * Math.cos(verticalAlpha),
     z: -r * Math.sin(verticalAlpha),
-    color: null,
+    color: Color("white"),
   };
 };
 

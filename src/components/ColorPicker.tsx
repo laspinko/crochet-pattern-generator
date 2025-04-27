@@ -1,7 +1,6 @@
 import { Card, IconButton, Stack } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import Color, { ColorInstance } from "color";
-import { Close } from "@mui/icons-material";
 
 type ColorPickerProps = {
   color: ColorInstance;

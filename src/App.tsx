@@ -1,17 +1,39 @@
-import { Stitch } from "./logic/graph";
-import { Stack, Tab, Tabs } from "@mui/material";
-import { ReactElement, useState } from "react";
+import { buildPiece, recolour, Stitch } from "./logic/graph";
+import { Box, Stack, Tab, Tabs } from "@mui/material";
+import { ReactElement, useEffect, useState } from "react";
 import { PatternTab } from "./components/PatternTab";
 import { GenerateTab } from "./components/GenerateTab";
 import { Visualiser } from "./components/Visualiser";
+import Color, { ColorInstance } from "color";
 
 function App() {
   const [stitches, setStitches] = useState<Stitch[]>([]);
 
+  const [yarnColors, setYarnColors] = useState<ColorInstance[]>([
+    Color("white"),
+    Color("blue"),
+  ]);
+
+  useEffect(() => {
+    setStitches(recolour(stitches, yarnColors));
+  }, [yarnColors]);
+
   type TabLabels = "generate" | "pattern";
   const tabs: { [K in TabLabels]: ReactElement } = {
-    generate: <GenerateTab onStitchesChange={setStitches} />,
-    pattern: <PatternTab stitches={stitches} onStitchesChange={setStitches} />,
+    generate: (
+      <GenerateTab
+        onPointsChange={(points) =>
+          setStitches(buildPiece(points, yarnColors, true))
+        }
+      />
+    ),
+    pattern: (
+      <PatternTab
+        stitches={stitches}
+        yarnColors={yarnColors}
+        onColorsChange={setYarnColors}
+      />
+    ),
   };
 
   const [tab, setTab] = useState<TabLabels>("generate");
@@ -39,7 +61,9 @@ function App() {
             onClick={() => setTab("pattern")}
           />
         </Tabs>
-        {tabs[tab]}
+        {Object.entries(tabs).map(([label, el]) => (
+          <Box sx={{ display: label == tab ? undefined : "none" }}>{el}</Box>
+        ))}
       </Stack>
     </Stack>
   );
