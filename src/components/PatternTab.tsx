@@ -1,8 +1,8 @@
 import { Typography } from "@mui/material";
 import { splitIntoRows, rowToString, generatePattern } from "../logic/pattern";
-import { recolour, Stitch } from "../logic/graph";
-import { useEffect, useMemo, useState } from "react";
-import Color, { ColorInstance } from "color";
+import { Stitch } from "../logic/graph";
+import { useMemo } from "react";
+import { ColorInstance } from "color";
 import { YarnColors } from "./YarnColors";
 
 type PatternTabProps = {

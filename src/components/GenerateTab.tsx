@@ -1,6 +1,5 @@
 import { Autocomplete, Button, Stack, TextField } from "@mui/material";
 import { useState } from "react";
-import { buildPiece, Stitch } from "../logic/graph";
 import {
   spiralCurveHelper,
   generateEquidistantPoints,
