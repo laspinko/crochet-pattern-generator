@@ -1,3 +1,4 @@
+import Color, { ColorInstance } from "color";
 import { distance, Point3D } from "./curves";
 
 export type Stitch = {
@@ -5,6 +6,7 @@ export type Stitch = {
   prev: Stitch | null;
   postStitches: Stitch[];
   pos: Point3D;
+  yarnColor: ColorInstance;
 };
 
 export const buildPiece = (
@@ -26,6 +28,7 @@ export const buildPiece = (
           prev,
           pos: point,
           postStitches: openStitches.slice(0, openStitches.length - 1),
+          yarnColor: point.color || Color("white"),
         };
         return { stitches: [...stitches, curr], openStitches: [] };
       }
@@ -72,6 +75,7 @@ export const buildPiece = (
           ...skipped.slice(prev && prev.postStitches.length == 1 ? 1 : 0),
           ...(closest ? [closest] : []),
         ],
+        yarnColor: point.color || Color("white"),
       };
       return {
         stitches: [...stitches, curr],
