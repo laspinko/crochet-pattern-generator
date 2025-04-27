@@ -1,6 +1,6 @@
 import { Stitch } from "./logic/graph";
 import { Stack, Tab, Tabs } from "@mui/material";
-import { ReactElement, useMemo, useState } from "react";
+import { ReactElement, useState } from "react";
 import { PatternTab } from "./components/PatternTab";
 import { GenerateTab } from "./components/GenerateTab";
 import { Visualiser } from "./components/Visualiser";
@@ -11,13 +11,13 @@ function App() {
   type TabLabels = "generate" | "pattern";
   const tabs: { [K in TabLabels]: ReactElement } = {
     generate: <GenerateTab onStitchesChange={setStitches} />,
-    pattern: <PatternTab stitches={stitches} />,
+    pattern: <PatternTab stitches={stitches} onStitchesChange={setStitches} />,
   };
 
   const [tab, setTab] = useState<TabLabels>("generate");
 
   return (
-    <Stack direction="row" sx={{ width: "100%" }}>
+    <Stack direction="row" sx={{ width: "100%", height: "100%" }}>
       <Visualiser stitches={stitches} />
       <Stack
         spacing={2}

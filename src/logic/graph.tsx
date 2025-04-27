@@ -1,5 +1,7 @@
 import Color, { ColorInstance } from "color";
 import { distance, Point3D } from "./curves";
+import update from "immutability-helper";
+import { StickyNote2Sharp } from "@mui/icons-material";
 
 export type Stitch = {
   id: number;
@@ -93,3 +95,24 @@ export const buildPiece = (
   ).stitches;
   return stitches;
 };
+
+const colorDistance = (a: ColorInstance, b: ColorInstance) => {
+  return Math.sqrt(
+    (a.red() - b.red()) * (a.red() - b.red()) +
+      (a.green() - b.green()) * (a.green() - b.green()) +
+      (a.blue() - b.blue()) * (a.blue() - b.blue())
+  );
+};
+
+export const recolour = (piece: Stitch[], colors: ColorInstance[]): Stitch[] =>
+  piece.map((stitch): Stitch => {
+    const col = stitch.pos.color;
+    if (!col) return { ...stitch, yarnColor: Color("yarn") };
+    return {
+      ...stitch,
+      yarnColor:
+        [...colors].sort(
+          (a, b) => colorDistance(a, col) - colorDistance(b, col)
+        )[0] || col,
+    };
+  });
