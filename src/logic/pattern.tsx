@@ -1,13 +1,16 @@
+import { ColorInstance } from "color";
 import { Stitch } from "./graph";
 
-type PatternNotation =
+type PatternNotation = (
   | { _t: "sc" }
   | { _t: "inc"; num: number }
   | { _t: "dec"; num: number }
   | { _t: "ch" }
   | { _t: "mr" }
   | { _t: "finish off"; num: number }
-  | { _t: "unknown" };
+  | { _t: "unknown" }
+) & { yarnColor: ColorInstance };
+type BriefNotation = { reps: number; notation: PatternNotation };
 
 const stitchCount = (
   notation: PatternNotation
@@ -29,6 +32,7 @@ const stitchCount = (
 };
 
 const patternNotatoinEqual = (a: PatternNotation, b: PatternNotation) => {
+  if (a.yarnColor != b.yarnColor) return false;
   switch (a._t) {
     case "inc":
     case "dec":
@@ -51,11 +55,16 @@ export const generatePattern = (stitches: Stitch[]): PatternNotation[] => {
   const res = stitches.reduce(
     ({ lastPost, pattern, lastNotation }, stitch): Accumulator => {
       const currLastPost = stitch.postStitches[stitch.postStitches.length - 1];
+      const yarnColor = stitch.yarnColor;
       const patternForward = lastNotation
         ? [...pattern, lastNotation]
         : pattern;
       if (!stitch.prev) {
-        return { lastPost: null, pattern: [], lastNotation: { _t: "mr" } };
+        return {
+          lastPost: null,
+          pattern: [],
+          lastNotation: { _t: "mr", yarnColor },
+        };
       } else if (currLastPost) {
         if (stitch.postStitches.length == 1) {
           if (currLastPost == lastPost) {
@@ -64,20 +73,28 @@ export const generatePattern = (stitches: Stitch[]): PatternNotation[] => {
                 return {
                   lastPost: currLastPost,
                   pattern,
-                  lastNotation: { _t: "inc", num: lastNotation.num + 1 },
+                  lastNotation: {
+                    _t: "inc",
+                    num: lastNotation.num + 1,
+                    yarnColor,
+                  },
                 };
               case "sc":
                 return {
                   lastPost: currLastPost,
                   pattern,
-                  lastNotation: { _t: "inc", num: 2 },
+                  lastNotation: {
+                    _t: "inc",
+                    num: 2,
+                    yarnColor,
+                  },
                 };
             }
           } else if (currLastPost.prev == lastPost) {
             return {
               lastPost: currLastPost,
               pattern: patternForward,
-              lastNotation: { _t: "sc" },
+              lastNotation: { _t: "sc", yarnColor },
             };
           }
         } else {
@@ -90,7 +107,11 @@ export const generatePattern = (stitches: Stitch[]): PatternNotation[] => {
             return {
               lastPost: currLastPost,
               pattern: patternForward,
-              lastNotation: { _t: "dec", num: stitch.postStitches.length },
+              lastNotation: {
+                _t: "dec",
+                num: stitch.postStitches.length,
+                yarnColor,
+              },
             };
           }
         }
@@ -98,13 +119,13 @@ export const generatePattern = (stitches: Stitch[]): PatternNotation[] => {
         return {
           lastPost,
           pattern: patternForward,
-          lastNotation: { _t: "ch" },
+          lastNotation: { _t: "ch", yarnColor },
         };
       }
       return {
         lastPost,
         pattern: patternForward,
-        lastNotation: { _t: "unknown" },
+        lastNotation: { _t: "unknown", yarnColor },
       };
     },
     { lastPost: null, pattern: [], lastNotation: null } as Accumulator
@@ -176,9 +197,8 @@ export const splitIntoRows = (pattern: PatternNotation[]): Row[] => {
     : [...res.finishedRows, res.currentRow];
 };
 
-export const rowToString = (row: Row): string => {
-  type Accumulator = { reps: number; notation: PatternNotation }[];
-  const briefPattern = row.pattern.reduce((acc, notation): Accumulator => {
+export const briefRow = (row: Row) => {
+  const briefPattern = row.pattern.reduce((acc, notation): BriefNotation[] => {
     const lastAbbrev = acc[acc.length - 1];
     if (lastAbbrev && patternNotatoinEqual(lastAbbrev.notation, notation))
       return [
@@ -186,13 +206,6 @@ export const rowToString = (row: Row): string => {
         { ...lastAbbrev, reps: lastAbbrev.reps + 1 },
       ];
     return [...acc, { reps: 1, notation: notation }];
-  }, [] as Accumulator);
-  return (
-    briefPattern
-      .map(
-        ({ reps, notation }) =>
-          `${reps > 1 ? reps : ""} ${patternNotationToString(notation)}`
-      )
-      .join(", ") + ` (${rowStitchCount(row).adds})`
-  );
+  }, [] as BriefNotation[]);
+  return { briefPattern, stitchCount: rowStitchCount(row).adds };
 };

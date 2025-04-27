@@ -1,5 +1,10 @@
 import { Typography } from "@mui/material";
-import { splitIntoRows, rowToString, generatePattern } from "../logic/pattern";
+import {
+  splitIntoRows,
+  generatePattern,
+  briefRow,
+  patternNotationToString,
+} from "../logic/pattern";
 import { Stitch } from "../logic/graph";
 import { useMemo } from "react";
 import { ColorInstance } from "color";
@@ -17,14 +22,30 @@ export const PatternTab = ({
 }: PatternTabProps) => {
   const pattern = generatePattern(stitches);
 
-  const rows = useMemo(() => splitIntoRows(pattern), [stitches]);
+  const briefRows = useMemo(
+    () => splitIntoRows(pattern).map(briefRow),
+    [stitches]
+  );
 
   return (
     <>
       <YarnColors colors={yarnColors} onColorsChange={onColorsChange} />
-      {rows.map((row, i) => (
+      {briefRows.map(({ briefPattern, stitchCount }, i) => (
         <Typography>
-          {i}. {rowToString(row)}
+          {i}.{" "}
+          {briefPattern.map(({ reps, notation }, i) => (
+            <Typography
+              display="inline"
+              sx={{
+                color: notation.yarnColor.toString(),
+                background: notation.yarnColor.isLight() ? "black" : "white",
+              }}
+            >
+              {` ${reps > 1 ? reps : ""} ${patternNotationToString(notation)}` +
+                (i == briefPattern.length - 1 ? " " : ", ")}
+            </Typography>
+          ))}{" "}
+          ({stitchCount})
         </Typography>
       ))}
     </>
