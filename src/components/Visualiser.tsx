@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import ForceGraph3D from "react-force-graph-3d";
 import { Stitch } from "../logic/graph";
+import { ColorInstance } from "color";
 
 type Data = {
   nodes: { id: number; x: number; y: number; z: number }[];
@@ -46,11 +47,15 @@ type VisualiserProps = { stitches: Stitch[] };
 export const Visualiser = ({ stitches }: VisualiserProps) => {
   const [data, setData] = useState<Data>({ nodes: [], links: [] });
   const lastDataHash = useRef("");
+  const colorMap = useRef<Map<number, ColorInstance>>(new Map());
 
   useEffect(() => {
     /// The d3 simulation mutates the data, and also whenever the data reference is refreshed the simulation reheats
     const newData = buildData(stitches);
     const newDataHash = dataHash(newData);
+    colorMap.current = new Map(
+      stitches.map((stitch) => [stitch.id, stitch.yarnColor])
+    );
     if (newDataHash != lastDataHash.current) {
       lastDataHash.current = newDataHash;
       setData(newData);
@@ -63,17 +68,14 @@ export const Visualiser = ({ stitches }: VisualiserProps) => {
       //d3AlphaDecay={0.005}
       //d3VelocityDecay={0.2}
       linkWidth={10}
-      nodeColor={(node) =>
-        stitches.find((stitch) => stitch.id == node.id)!.yarnColor.toString()
-      }
-      linkColor={(link) =>
-        stitches
-          .find(
-            // @ts-expect-error: D3 changes the type of the links silently
-            (stitch) => stitch.id == link.source || stitch.id == link.source.id
-          )!
-          .yarnColor.toString()
-      }
+      nodeColor={(node) => colorMap.current.get(node.id)!.toString()}
+      linkColor={(link: any) => {
+        // d3 mutates the link objects, as well as their types
+        const sourceId = Object.keys(link.source).includes("id")
+          ? link.source.id
+          : link.source;
+        return colorMap.current.get(sourceId)!.toString();
+      }}
       width={1000}
     />
   );
