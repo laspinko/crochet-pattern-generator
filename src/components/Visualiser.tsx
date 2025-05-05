@@ -1,11 +1,27 @@
 import { useEffect, useRef, useState } from "react";
-import ForceGraph3D from "react-force-graph-3d";
+import ForceGraph3D, {
+  ForceGraphMethods,
+  LinkObject,
+  NodeObject,
+} from "react-force-graph-3d";
 import { Stitch } from "../logic/graph";
 import { ColorInstance } from "color";
 
+type Node = {
+  id: number;
+  x: number;
+  y: number;
+  z: number;
+};
+type Link = {
+  source: number;
+  target: number;
+  label: string;
+  distance: number;
+};
 type Data = {
-  nodes: { id: number; x: number; y: number; z: number }[];
-  links: { source: number; target: number; label: string }[];
+  nodes: Node[];
+  links: Link[];
 };
 
 const buildData = (stitches: Stitch[]): Data => {
@@ -22,13 +38,15 @@ const buildData = (stitches: Stitch[]): Data => {
             source: stitch.id,
             target: stitch.prev.id,
             label: "top",
+            distance: 40,
           },
         ]
       : []),
-    ...stitch.postStitches.map(({ id: target }) => ({
+    ...stitch.postStitches.map((other) => ({
       source: stitch.id,
-      target,
+      target: other.id,
       label: "post",
+      distance: 40,
     })),
   ]);
   return { nodes, links };
@@ -48,6 +66,9 @@ export const Visualiser = ({ stitches }: VisualiserProps) => {
   const [data, setData] = useState<Data>({ nodes: [], links: [] });
   const lastDataHash = useRef("");
   const colorMap = useRef<Map<number, ColorInstance>>(new Map());
+  const forceGraphRef = useRef<
+    ForceGraphMethods<NodeObject<Node>, LinkObject<Node, Link>> | undefined
+  >(undefined);
 
   useEffect(() => {
     /// The d3 simulation mutates the data, and also whenever the data reference is refreshed the simulation reheats
@@ -58,12 +79,14 @@ export const Visualiser = ({ stitches }: VisualiserProps) => {
     );
     if (newDataHash != lastDataHash.current) {
       lastDataHash.current = newDataHash;
+
       setData(newData);
     }
   }, [stitches]);
 
   return (
     <ForceGraph3D
+      ref={forceGraphRef}
       graphData={data}
       //d3AlphaDecay={0.005}
       //d3VelocityDecay={0.2}
@@ -76,6 +99,7 @@ export const Visualiser = ({ stitches }: VisualiserProps) => {
           : link.source;
         return colorMap.current.get(sourceId)!.toString();
       }}
+      forceEngine="d3"
       width={1000}
     />
   );

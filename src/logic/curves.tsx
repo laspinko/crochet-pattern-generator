@@ -25,14 +25,47 @@ export const distance = (a: Point3D, b: Point3D) => {
   );
 };
 
-export const spiralCurveHelper = (r: number, rows: number) => {
+const getPixel = (
+  img: ImageData,
+  x: number,
+  y: number
+): ColorInstance | null => {
+  const id = (y * img.width + x) * 4;
+  const [r, g, b] = img.data.slice(id, id + 3);
+  return r != undefined && g != undefined && b != undefined
+    ? Color({ r, g, b })
+    : null;
+};
+
+export const spiralCurveHelper = (
+  r: number,
+  rows: number,
+  image: ImageData | null
+) => {
   const alphaMax = rows * Math.PI * 2;
   const rowHeight = (r * Math.PI) / rows;
   return {
-    curve: (t: number) => ({
-      ...spiral(r, t * alphaMax, alphaMax),
-      color: Color({ h: t * 300, s: 100, v: 100 }),
-    }),
+    curve: (t: number): Point3D => {
+      const point = spiral(r, t * alphaMax, alphaMax);
+      const longitude = Math.atan2(point.y, point.x) / (Math.PI * 2) + 0.5;
+      const latitude =
+        Math.atan2(point.z, Math.sqrt(point.x * point.x + point.y * point.y)) /
+          (Math.PI * 2) +
+        0.5;
+      const color =
+        (image &&
+          getPixel(
+            image,
+            Math.floor(longitude * image.width),
+            Math.floor(latitude * image.height)
+          )) ||
+        Color({ h: t * 300, s: 100, v: 100 });
+
+      return {
+        ...point,
+        color,
+      };
+    },
     rowHeight,
   };
 };

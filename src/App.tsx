@@ -25,6 +25,8 @@ function App() {
         onPointsChange={(points) =>
           setStitches(buildPiece(points, yarnColors, true))
         }
+        onColorsChange={setYarnColors}
+        yarnColors={yarnColors}
       />
     ),
     pattern: (
