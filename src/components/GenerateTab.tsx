@@ -45,13 +45,7 @@ export const GenerateTab = ({
         Generate geometry
       </Button>
       <ImageUpload onUpload={setImage} />
-      {image && (
-        <ImageQuantizer
-          colors={yarnColors}
-          onColorsChange={onColorsChange}
-          img={image}
-        />
-      )}
+      {image && <ImageQuantizer onColorsChange={onColorsChange} img={image} />}
       <YarnColors colors={yarnColors} onColorsChange={onColorsChange} />
     </Stack>
   );
