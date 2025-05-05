@@ -81,6 +81,8 @@ export const Visualiser = ({ stitches }: VisualiserProps) => {
       lastDataHash.current = newDataHash;
 
       setData(newData);
+    } else {
+      forceGraphRef.current?.renderer();
     }
   }, [stitches]);
 

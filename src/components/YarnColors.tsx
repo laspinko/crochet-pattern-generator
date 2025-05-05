@@ -12,9 +12,10 @@ export const YarnColors = ({ colors, onColorsChange }: YarnColorsProps) => {
   return (
     <Stack>
       <Typography variant="h5">Available yarn colors</Typography>
-      <Stack direction="row">
+      <Stack direction="row" flexWrap="wrap">
         {colors.map((color, i) => (
           <ColorPicker
+            id={i}
             color={color}
             onColorChange={(color) =>
               onColorsChange(update(colors, { [i]: { $set: color } }))

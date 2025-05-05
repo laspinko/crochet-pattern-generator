@@ -40,7 +40,7 @@ export default function ImageUpload({ onUpload }: InputFileUploadProps) {
           multiple
         />
       </Button>
-      <CanvasRenderer file={file} onRender={onUpload} />
+      {file && <CanvasRenderer file={file} onRender={onUpload} />}
     </>
   );
 }

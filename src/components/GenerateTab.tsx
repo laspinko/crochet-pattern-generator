@@ -1,4 +1,4 @@
-import { Autocomplete, Button, Stack, TextField } from "@mui/material";
+import { Button, Stack } from "@mui/material";
 import { useState } from "react";
 import {
   spiralCurveHelper,
@@ -8,8 +8,10 @@ import {
 import ImageUpload from "./ImageUploadButton";
 import { YarnColors } from "./YarnColors";
 import { ColorInstance } from "color";
+import { NumberPicker } from "./NumberPicker";
+import { ImageQuantizer } from "./ImageQantizer";
 
-const rowOptions = [...new Array(45)].map((_, i) => i + 5);
+const rowOptions = [...new Array(46)].map((_, i) => i + 5);
 type GenerateTabProps = {
   onPointsChange: (stitches: Point3D[]) => void;
   yarnColors: ColorInstance[];
@@ -23,19 +25,12 @@ export const GenerateTab = ({
   const [targetRows, setTargetRows] = useState(rowOptions[0]!);
   const [image, setImage] = useState<ImageData | null>(null);
   return (
-    <Stack>
-      <Autocomplete
-        defaultValue={rowOptions[0]!}
+    <Stack gap={2}>
+      <NumberPicker
+        label="Target rows"
+        onValueChange={setTargetRows}
         options={rowOptions}
-        renderInput={(params) => <TextField {...params} label="Target rows" />}
-        getOptionLabel={(n) => `${n}`}
-        disableClearable
-        onChange={(_, value) => {
-          setTargetRows(value);
-        }}
       />
-      <ImageUpload onUpload={setImage} />
-      <YarnColors colors={yarnColors} onColorsChange={onColorsChange} />
       <Button
         onClick={() => {
           const { curve, rowHeight } = spiralCurveHelper(
@@ -47,8 +42,17 @@ export const GenerateTab = ({
           onPointsChange(points);
         }}
       >
-        Generate pattern
+        Generate geometry
       </Button>
+      <ImageUpload onUpload={setImage} />
+      {image && (
+        <ImageQuantizer
+          colors={yarnColors}
+          onColorsChange={onColorsChange}
+          img={image}
+        />
+      )}
+      <YarnColors colors={yarnColors} onColorsChange={onColorsChange} />
     </Stack>
   );
 };
